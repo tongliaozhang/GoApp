@@ -1,9 +1,13 @@
 package main
 
 import (
+	"GoApp/db"
+	"GoApp/dirMonitor"
 	"GoApp/fileDeal"
 	"GoApp/oop"
 	"bufio"
+	//"bytes"
+	//"encoding/json"
 	"fmt"
 	"os"
 )
@@ -21,6 +25,8 @@ func initAppConsole() string {
 	fmt.Println("*  1 FileDeal               *")
 	fmt.Println("*  2 SortInterface          *")
 	fmt.Println("*  3 OOP                    *")
+	fmt.Println("*  4 FileDealToDB           *")
+	fmt.Println("*  5 DirMonitor             *")
 	fmt.Println("*  0 exit                   *")
 	fmt.Println("*****************************")
 	fmt.Println("Please choose function code : ")
@@ -74,28 +80,34 @@ func chooseMethod(input string) {
 
 		sr := initAppConsole()
 		chooseMethod(sr)
-
-	//for {
-	//	select {
-	//	case ch, ok := <-c:
-	//		if !ok {
-	//			break
-	//		} else {
-	//			fmt.Println("c value :", ch)
-	//		}
-
-	//	default:
-	//		break
-	//	}
-
-	//}
 	case "3":
 		mf := oop.MyFile{}
 		sf := mf.InitMyFile()
-		fmt.Printf("%v\n", sf)
+		fmt.Print("%v\n", sf)
+	case "4":
+		fileDb := fileDeal.DataFile{}
+		fileInfo := fileDb.FileInfoInit("textFile.csv")
+
+		fmt.Printf("%v\n", fileInfo)
+
+		//buffer := bytes.NewBuffer(nil)
+		//encoder := json.NewEncoder(buffer)
+		//encoder.Encode(fileInfo)
+
+		//fmt.Printf("%v\n", buffer)
+
+		db.InsertMysql(&fileInfo, "insert into go_insert(C1,C2,C3,C4)VALUES(?,?,?,?)")
+
+	case "5":
+		fmt.Println("Please input Dir Path:")
+		reader := bufio.NewReader(os.Stdin)
+		input, _, _ := reader.ReadLine()
+		dirMontor(string(input))
+
+	case "6":
+		//dirMonitor.PathWalk("F://GoSpace//src//GoApp")
 	case "0":
 		os.Exit(0)
-
 	default:
 		fmt.Println("input error,please try again!")
 
@@ -103,5 +115,27 @@ func chooseMethod(input string) {
 		tmp, _, _ := reader.ReadLine()
 
 		chooseMethod(string(tmp))
+	}
+}
+
+func dirMontor(dirName string) {
+	ch := make(chan dirMonitor.DirInfo)
+	info1 := dirMonitor.DirInfo{}
+
+	begin := info1.PathWalk(dirName)
+
+	go info1.DirMonitor(dirName, ch)
+
+	for v := range ch {
+
+		if dirMonitor.DirWaklCompare(v, begin) {
+			//fmt.Println("==============================")
+			//fmt.Println("Dir not change......")
+		} else {
+			begin = info1.PathWalk(dirName)
+			fmt.Println("Dir is change......")
+			fmt.Println("==============================")
+		}
+
 	}
 }

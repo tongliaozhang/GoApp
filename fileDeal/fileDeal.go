@@ -24,7 +24,6 @@ func ReadFileAndPrint() bool {
 
 	if err != nil {
 		fmt.Println("open file failed,please check !")
-		panic("Test")
 		return false
 	}
 

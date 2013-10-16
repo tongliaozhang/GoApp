@@ -1,9 +1,5 @@
 package oop
 
-import (
-//"fmt"
-)
-
 type MyFile struct {
 	Id       int32
 	FileName string
